@@ -66,10 +66,6 @@ if st.button("Calculate Final Rate", type="primary", use_container_width=True):
         c2.metric("After Loader", f"{after_loader:,.2f}")
         c3.metric("Final Rate (incl. GST)", f"{final_rate:,.2f}")
 
-        st.caption(
-            f"Formula used: Final Rate = Base × (1 + {loader_pct}/100) × (1 + {GST_RATE_FIXED}/100)"
-        )
-
 st.divider()
 
 # ============================================
