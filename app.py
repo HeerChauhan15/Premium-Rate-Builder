@@ -25,12 +25,17 @@ def apply_loader_and_gst(base_rate, loader_pct, gst_pct):
     return after_loader, final_rate
 
 
-tab1, tab2 = st.tabs(["🖊 Manual Entry", "📁 Upload Rate Sheet"])
+st.sidebar.title("📋 Menu")
+page = st.sidebar.radio(
+    "Choose a section",
+    ["🖊 Manual Entry", "📁 Upload Rate Sheet"],
+    label_visibility="collapsed"
+)
 
 # ============================================
-# TAB 1: MANUAL ENTRY
+# PAGE 1: MANUAL ENTRY
 # ============================================
-with tab1:
+if page == "🖊 Manual Entry":
     st.subheader("Manual Rate Calculation")
 
     col1, col2, col3 = st.columns(3)
@@ -78,9 +83,9 @@ with tab1:
             )
 
 # ============================================
-# TAB 2: UPLOAD RATE SHEET
+# PAGE 2: UPLOAD RATE SHEET
 # ============================================
-with tab2:
+elif page == "📁 Upload Rate Sheet":
     st.subheader("Full Rate Table from Uploaded Sheet")
     st.markdown(
         "Sheet must have an **AGE/TERM** style layout — a header row containing "
