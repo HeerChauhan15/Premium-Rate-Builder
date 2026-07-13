@@ -72,20 +72,13 @@ st.divider()
 # SECTION 2: UPLOAD RATE SHEET
 # ============================================
 st.subheader("📁 Full Rate Table from Uploaded Sheet")
-st.markdown(
-    "Sheet must have an **AGE/TERM** style layout — a header row containing "
-    "`AGE`, with tenure years as the remaining column headers."
-)
-
-st.info(f"ℹ GST @ {GST_RATE_FIXED}% will be added automatically to every rate in the sheet — it is not editable.")
-
-st.markdown(f"**Loader % used:** the value entered in the Manual section above (currently: "
-            f"{loader_pct if loader_pct is not None else 'not set'}).")
+st.caption("Sheet must have an AGE/TERM layout — header row with AGE, tenure years as columns.")
+st.caption(f"GST @ {GST_RATE_FIXED}% auto-applied. Loader used: {loader_pct if loader_pct is not None else 'not set'} (from Manual section).")
 
 loader_ready = loader_pct is not None
 
 if not loader_ready:
-    st.warning("⚠ Loader % is mandatory. Please enter a Loader % in the Manual section above to unlock the file upload.")
+    st.warning("⚠ Set Loader % above to unlock upload.")
 else:
     excel_loader_pct = loader_pct
     excel_gst_pct = GST_RATE_FIXED
