@@ -12,7 +12,7 @@ st.set_page_config(
 st.title("💰 Loader & GST Rate Calculator")
 st.caption("Enter a base rate manually, or upload an Age/Term rate sheet — GST and Loader are applied on top.")
 
-GST_RATE_DEFAULT = 18.0
+GST_RATE_FIXED = 18.0  # Fixed — not user-editable. GST is always added automatically at 18%.
 
 # ============================================
 # FORMULA (same for both modes):
@@ -30,48 +30,40 @@ def apply_loader_and_gst(base_rate, loader_pct, gst_pct):
 # ============================================
 st.subheader("🖊 Manual Rate Calculation")
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    base_rate = st.number_input(
-        "Base Rate (per ₹1,00,000 Sum Assured)",
-        min_value=0.0,
-        value=0.0,
-        step=0.01,
-        format="%.2f"
-    )
-with col2:
-    loader_pct = st.number_input(
-        "Loader % (Header Loader)",
-        min_value=0.0,
-        max_value=500.0,
-        value=0.0,
-        step=1.0
-    )
-with col3:
-    gst_pct = st.number_input(
-        "GST %",
-        min_value=0.0,
-        max_value=100.0,
-        value=GST_RATE_DEFAULT,
-        step=0.5
-    )
+loader_pct = st.number_input(
+    "Loader % (Header Loader)",
+    min_value=0.0,
+    max_value=500.0,
+    value=0.0,
+    step=1.0
+)
+
+st.info(f"ℹ GST @ {GST_RATE_FIXED}% will be added automatically — it is not editable.")
+
+base_rate = st.number_input(
+    "Base Rate (per ₹1,00,000 Sum Assured) — enter amount **without GST**",
+    min_value=0.0,
+    value=0.0,
+    step=0.01,
+    format="%.2f"
+)
 
 st.write("")
 if st.button("Calculate Final Rate", type="primary", use_container_width=True):
     if base_rate <= 0:
         st.error("Please enter a Base Rate greater than 0.")
     else:
-        after_loader, final_rate = apply_loader_and_gst(base_rate, loader_pct, gst_pct)
+        after_loader, final_rate = apply_loader_and_gst(base_rate, loader_pct, GST_RATE_FIXED)
 
-        st.success(f"✅ Base {base_rate:,.2f} | Loader {loader_pct}% | GST {gst_pct}%")
+        st.success(f"✅ Base {base_rate:,.2f} | Loader {loader_pct}% | GST {GST_RATE_FIXED}%")
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("Base Rate", f"{base_rate:,.2f}")
+        c1.metric("Base Rate (without GST)", f"{base_rate:,.2f}")
         c2.metric("After Loader", f"{after_loader:,.2f}")
         c3.metric("Final Rate (incl. GST)", f"{final_rate:,.2f}")
 
         st.caption(
-            f"Formula used: Final Rate = Base × (1 + {loader_pct}/100) × (1 + {gst_pct}/100)"
+            f"Formula used: Final Rate = Base × (1 + {loader_pct}/100) × (1 + {GST_RATE_FIXED}/100)"
         )
 
 st.divider()
@@ -85,34 +77,25 @@ st.markdown(
     "`AGE`, with tenure years as the remaining column headers."
 )
 
-st.markdown("**Step 1 — Set Loader % and GST % (required before upload is accepted)**")
-ec1, ec2 = st.columns(2)
-with ec1:
-    excel_loader_pct = st.number_input(
-        "Loader %",
-        min_value=0.0,
-        max_value=500.0,
-        value=None,
-        step=1.0,
-        placeholder="Enter loader %",
-        key="excel_loader"
-    )
-with ec2:
-    excel_gst_pct = st.number_input(
-        "GST %",
-        min_value=0.0,
-        max_value=100.0,
-        value=None,
-        step=0.5,
-        placeholder="Enter GST %",
-        key="excel_gst"
-    )
+st.info(f"ℹ GST @ {GST_RATE_FIXED}% will be added automatically to every rate in the sheet — it is not editable.")
 
-loader_gst_ready = excel_loader_pct is not None and excel_gst_pct is not None
+st.markdown("**Step 1 — Set Loader % (mandatory)**")
+excel_loader_pct = st.number_input(
+    "Loader %",
+    min_value=0.0,
+    max_value=500.0,
+    value=None,
+    step=1.0,
+    placeholder="Enter loader %",
+    key="excel_loader"
+)
 
-if not loader_gst_ready:
-    st.warning("⚠ Enter both Loader % and GST % above to unlock the file upload.")
+loader_ready = excel_loader_pct is not None
+
+if not loader_ready:
+    st.warning("⚠ Loader % is mandatory. Please enter a Loader % above to unlock the file upload.")
 else:
+    excel_gst_pct = GST_RATE_FIXED
     st.markdown("**Step 2 — Upload your rate sheet (.xlsx)**")
     uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
 
