@@ -16,11 +16,11 @@ GST_RATE_FIXED = 18.0  # Fixed — not user-editable. GST is always added automa
 
 # ============================================
 # FORMULA (same for both modes):
-#   After Loader = Base Rate x (1 + Loader% / 100)
+#   After Loader = Base Rate / (1 - Loader% / 100)
 #   Final Rate   = After Loader x (1 + GST% / 100)
 # ============================================
 def apply_loader_and_gst(base_rate, loader_pct, gst_pct):
-    after_loader = base_rate * (1 + (loader_pct / 100.0))
+    after_loader = base_rate / (1 - (loader_pct / 100.0))
     final_rate = after_loader * (1 + (gst_pct / 100.0))
     return after_loader, final_rate
 
@@ -41,7 +41,7 @@ base_rate = st.number_input(
 loader_pct = st.number_input(
     "Loader % (Header Loader)",
     min_value=0.0,
-    max_value=500.0,
+    max_value=99.99,
     value=None,
     step=1.0,
     placeholder="Enter loader %",
@@ -56,6 +56,8 @@ if st.button("Calculate Final Rate", type="primary", use_container_width=True):
         st.error("Please enter a Base Rate greater than 0.")
     elif loader_pct is None:
         st.error("Please enter a Loader % before calculating.")
+    elif loader_pct >= 100:
+        st.error("Loader % must be less than 100 (division by zero/negative otherwise).")
     else:
         after_loader, final_rate = apply_loader_and_gst(base_rate, loader_pct, GST_RATE_FIXED)
 
@@ -75,10 +77,10 @@ st.subheader("📁 Full Rate Table from Uploaded Sheet")
 st.caption("Sheet must have an AGE/TERM layout — header row with AGE, tenure years as columns.")
 st.caption(f"GST @ {GST_RATE_FIXED}% auto-applied. Loader used: {loader_pct if loader_pct is not None else 'not set'} (from Manual section).")
 
-loader_ready = loader_pct is not None
+loader_ready = loader_pct is not None and loader_pct < 100
 
 if not loader_ready:
-    st.warning("⚠ Set Loader % above to unlock upload.")
+    st.warning("⚠ Set a valid Loader % (below 100) above to unlock upload.")
 else:
     excel_loader_pct = loader_pct
     excel_gst_pct = GST_RATE_FIXED
@@ -127,8 +129,8 @@ else:
                 lambda s: pd.to_numeric(s, errors="coerce")
             )
 
-            # Apply Loader then GST to every cell
-            result = result * (1 + (excel_loader_pct / 100.0))
+            # Apply Loader (division) then GST (multiplication) to every cell
+            result = result / (1 - (excel_loader_pct / 100.0))
             result = result * (1 + (excel_gst_pct / 100.0))
             result = result.round(2)
 
