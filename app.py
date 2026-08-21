@@ -4,7 +4,7 @@ import numpy as np
 import io
 
 st.set_page_config(
-    page_title="Loader & GST Rate Calculator",
+    page_title="Rate Sheet Calculator",
     page_icon="💰",
     layout="wide"
 )
